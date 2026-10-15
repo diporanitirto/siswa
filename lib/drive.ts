@@ -22,7 +22,7 @@ export async function uploadToDrive(input: DriveUploadInput): Promise<DriveUploa
   const secret = process.env.DRIVE_UPLOAD_SECRET;
 
   if (!url || !secret) {
-    throw new Error('Upload Drive belum dikonfigurasi. Isi DRIVE_UPLOAD_URL dan DRIVE_UPLOAD_SECRET di .env.local.');
+    throw new Error('Unggah ke Drive belum dikonfigurasi. Isi DRIVE_UPLOAD_URL dan DRIVE_UPLOAD_SECRET di .env.local.');
   }
 
   const { dataBase64, ...meta } = input;

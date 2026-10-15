@@ -111,13 +111,13 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
   return (
     <div className="rounded-lg border border-scoutBrown-200 bg-white p-3">
       <p className="text-xs font-semibold text-scoutBrown-700 mb-2">
-        Upload Bukti Hukuman
+        Unggah Bukti Hukuman
       </p>
 
       {success && !file && (
         <div className="mb-2 rounded-lg border border-scoutGreen-300 bg-scoutGreen-50 p-2">
           <p className="text-xs text-scoutGreen-700">
-            Bukti terkirim! Tunggu verifikasi pembina/petugas.
+            Bukti sudah diunggah. Tunggu verifikasi pembina/petugas.
           </p>
         </div>
       )}
@@ -135,9 +135,9 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
               type="button"
               onClick={handleUpload}
               disabled={isUploading}
-              className="flex-1 rounded-lg bg-scoutGreen-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-scoutGreen-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex-1 rounded-lg bg-scoutGreen-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-scoutGreen-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isUploading ? 'Mengirim...' : 'Kirim Bukti'}
+              {isUploading ? 'Mengunggah...' : 'Unggah Bukti'}
             </button>
             <button
               type="button"
@@ -175,8 +175,8 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
             </svg>
             Pilih Foto dari Galeri / Kamera
           </label>
-          <p className="mt-1.5 text-[0.65rem] text-scoutBrown-400">
-            Foto akan dikompres otomatis. Maksimal 8 MB setelah dikompres.
+          <p className="mt-1.5 text-[0.65rem] text-scoutBrown-600">
+            Foto dikompres otomatis. Ukuran akhir maks. 8 MB.
           </p>
         </>
       )}

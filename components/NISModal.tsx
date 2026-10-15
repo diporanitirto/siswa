@@ -39,12 +39,12 @@ export default function NISModal({ isOpen, onSubmit }: NISModalProps) {
       if (res.ok && result?.success) {
         onSubmit(nis, result.data as SiswaData);
       } else if (res.status === 404) {
-        setError('NIS tidak ditemukan dalam database. Periksa kembali NIS Anda.');
+        setError('NIS tidak ditemukan. Cek lagi NIS-mu.');
       } else {
-        setError('Gagal memuat data siswa. Silakan coba lagi.');
+        setError('Gagal memuat data. Coba lagi.');
       }
     } catch {
-      setError('Gagal memuat data siswa. Silakan coba lagi.');
+      setError('Gagal memuat data. Coba lagi.');
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +69,8 @@ export default function NISModal({ isOpen, onSubmit }: NISModalProps) {
             <h2 className="text-xl font-bold text-scoutBrown-900 mb-1">
               Selamat Datang
             </h2>
-            <p className="text-sm text-scoutBrown-500">
-              Masukkan NIS untuk melihat poin & hukuman
+            <p className="text-sm text-scoutBrown-600">
+              Masukkan NIS untuk melihat poin dan hukumanmu
             </p>
           </div>
 

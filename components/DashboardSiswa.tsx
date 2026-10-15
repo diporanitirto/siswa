@@ -17,16 +17,16 @@ interface DashboardSiswaProps {
 }
 
 const statusInfo: Record<BuktiStatus, { label: string; className: string }> = {
-  belum: { label: 'Belum upload bukti', className: 'border-scoutKhaki-300 bg-scoutKhaki-100 text-scoutBrown-600' },
+  belum: { label: 'Belum unggah', className: 'border-scoutKhaki-300 bg-scoutKhaki-100 text-scoutBrown-800' },
   menunggu: { label: 'Menunggu verifikasi', className: 'border-scoutKhaki-500 bg-scoutKhaki-200 text-scoutBrown-800' },
-  selesai: { label: 'Bukti selesai', className: 'border-scoutGreen-300 bg-scoutGreen-100 text-scoutGreen-700' },
-  ditolak: { label: 'Bukti ditolak', className: 'border-scoutRed-300 bg-scoutRed-100 text-scoutRed-700' },
+  selesai: { label: 'Selesai', className: 'border-scoutGreen-300 bg-scoutGreen-100 text-scoutGreen-700' },
+  ditolak: { label: 'Ditolak', className: 'border-scoutRed-300 bg-scoutRed-100 text-scoutRed-700' },
 };
 
 function infoBukti(p: PelanggaranData) {
   if (!p.perlu_bukti) {
     return {
-      label: 'Peringatan (tanpa bukti)',
+      label: 'Peringatan',
       className: 'border-scoutBrown-200 bg-scoutBrown-50 text-scoutBrown-600',
     };
   }
@@ -121,7 +121,7 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-scoutBrown-200 bg-white px-4 py-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-scoutBrown-900">{siswa.nama}</p>
-          <p className="text-xs text-scoutBrown-500">
+          <p className="text-xs text-scoutBrown-600">
             {siswa.kelas} • Absen {siswa.absen} • NIS {siswa.nis}
           </p>
         </div>
@@ -143,13 +143,13 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
         <div className={`px-5 py-5 text-white ${adaHukuman ? 'bg-scoutRed-700' : 'bg-scoutBrown-700'}`}>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/70">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/85">
                 Total Poin Pelanggaran
               </p>
               <p className="mt-1.5 text-4xl font-bold leading-none tracking-tight">{totalPoin}</p>
             </div>
             <div className="min-w-0 max-w-[11rem] text-right">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/70">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/85">
                 Hukuman Berlaku
               </p>
               <p className="mt-1.5 text-sm font-semibold leading-snug">
@@ -165,12 +165,12 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-2 text-xs font-medium text-white/75">
-              {tahapBerikut
-                ? `${totalPoin} / ${tahapBerikut.min_poin} poin menuju tahap hukuman berikutnya`
-                : totalPoin > 0
-                  ? 'Sudah mencapai tahap hukuman terakhir. Jangan tambah poin lagi ya!'
-                  : 'Belum ada poin. Pertahankan! 💪'}
+            <p className="mt-2 text-xs font-medium text-white/85">
+              {totalPoin === 0
+                ? 'Belum ada poin. Semoga tetap kosong.'
+                : tahapBerikut
+                  ? `${totalPoin} / ${tahapBerikut.min_poin} poin menuju tahap hukuman berikutnya`
+                  : 'Ini tahap hukuman terakhir.'}
             </p>
           </div>
         </div>
@@ -179,21 +179,21 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
           <div className="border-t border-scoutRed-200 bg-scoutRed-50 px-5 py-4">
             <p className="text-xs font-semibold text-scoutRed-700">
               Ada <span className="font-bold">{hukumanBelumSelesai.length}</span> hukuman yang belum
-              selesai. Upload bukti fotonya di sini ya:
+              selesai. Unggah foto buktinya di sini:
             </p>
 
             <div className="mt-3 space-y-3">
               {hukumanBelumSelesai.map((p) => (
                 <div key={p.id} className="rounded-lg border border-scoutRed-200 bg-white p-3">
                   <p className="text-sm font-semibold leading-snug text-scoutBrown-900">{p.hukuman}</p>
-                  <p className="mt-0.5 text-xs text-scoutBrown-500">
+                  <p className="mt-0.5 text-xs text-scoutBrown-600">
                     {p.jenis_nama || 'Pelanggaran'} • {formatDate(p.tanggal)}
                   </p>
 
                   {p.bukti_status === 'menunggu' ? (
                     <div className="mt-2.5 rounded-lg border border-scoutKhaki-300 bg-scoutKhaki-100 p-2.5">
                       <p className="text-xs text-scoutBrown-700">
-                        Bukti sudah terkirim, tunggu verifikasi pembina/petugas.
+                        Bukti sudah diunggah, tunggu verifikasi pembina/petugas.
                       </p>
                       {p.bukti_url && (
                         <a
@@ -202,7 +202,7 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                           rel="noopener noreferrer"
                           className="mt-1.5 inline-block text-xs font-medium text-scoutBrown-600 underline underline-offset-2 hover:text-scoutBrown-800"
                         >
-                          Lihat bukti yang dikirim
+                          Lihat bukti yang diunggah
                         </a>
                       )}
                     </div>
@@ -230,7 +230,7 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
         <div className="flex items-center justify-between border-b border-scoutBrown-200 bg-scoutKhaki-50 px-5 py-4">
           <div>
             <h2 className="text-base font-bold text-scoutBrown-900">Riwayat Pelanggaran</h2>
-            <p className="mt-0.5 text-xs text-scoutBrown-500">
+            <p className="mt-0.5 text-xs text-scoutBrown-600">
               {rows.length > 0 ? `${rows.length} catatan` : 'Belum ada catatan'}
             </p>
           </div>
@@ -247,7 +247,7 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
 
         <div className="p-5">
           {loading ? (
-            <div className="flex items-center justify-center gap-2 py-10 text-sm text-scoutBrown-500">
+            <div className="flex items-center justify-center gap-2 py-10 text-sm text-scoutBrown-600">
               <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-scoutBrown-200 border-t-scoutBrown-600" />
               Memuat riwayat...
             </div>
@@ -263,7 +263,7 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                 </svg>
               </div>
               <p className="text-sm font-semibold text-scoutBrown-800">Tidak Ada Pelanggaran</p>
-              <p className="mt-1 text-xs text-scoutBrown-400">Mantap, pertahankan sikap dan disiplinmu!</p>
+              <p className="mt-1 text-xs text-scoutBrown-600">Terus jaga disiplinmu sampai akhir tahun.</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -272,9 +272,11 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                 const status = infoBukti(p);
                 return (
                   <div key={p.id} className="overflow-hidden rounded-lg border border-scoutBrown-200">
-                    <div
-                      className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-scoutKhaki-50"
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-scoutKhaki-50"
                       onClick={() => setExpandedId(expanded ? null : p.id)}
+                      aria-expanded={expanded}
                     >
                       <span className="shrink-0 rounded-md bg-scoutRed-100 px-2 py-0.5 text-xs font-bold text-scoutRed-700">
                         +{p.poin} poin
@@ -283,42 +285,42 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                         <p className="truncate text-sm font-semibold text-scoutBrown-900">
                           {p.jenis_nama || 'Pelanggaran'}
                         </p>
-                        <p className="text-xs text-scoutBrown-500">
+                        <p className="text-xs text-scoutBrown-600">
                           {formatDate(p.tanggal)} • {formatTime(p.created_at)}
                         </p>
                       </div>
-                      <span className={`hidden shrink-0 rounded-md border px-2 py-0.5 text-[0.65rem] font-semibold sm:inline-block ${status.className}`}>
+                      <span className={`shrink-0 rounded-md border px-2 py-0.5 text-[0.65rem] font-semibold ${status.className}`}>
                         {status.label}
                       </span>
                       <span className={`shrink-0 text-xs text-scoutBrown-400 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>
                         ▼
                       </span>
-                    </div>
+                    </button>
 
                     {expanded && (
                       <div className="space-y-3 border-t border-scoutBrown-100 bg-scoutKhaki-50 p-4">
                         <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
                           <div>
-                            <p className="text-scoutBrown-400">Poin</p>
+                            <p className="text-scoutBrown-600">Poin</p>
                             <p className="font-medium text-scoutBrown-800">+{p.poin}</p>
                           </div>
                           <div>
-                            <p className="text-scoutBrown-400">Total Poin Saat Itu</p>
+                            <p className="text-scoutBrown-600">Total poin saat itu</p>
                             <p className="font-medium text-scoutBrown-800">{p.total_poin ?? '-'}</p>
                           </div>
                           <div>
-                            <p className="text-scoutBrown-400">Status Bukti</p>
+                            <p className="text-scoutBrown-600">Status bukti</p>
                             <span className={`mt-0.5 inline-block rounded-md border px-2 py-0.5 text-[0.65rem] font-semibold ${status.className}`}>
                               {status.label}
                             </span>
                           </div>
                           <div className="col-span-2 sm:col-span-3">
-                            <p className="text-scoutBrown-400">Hukuman Saat Itu</p>
+                            <p className="text-scoutBrown-600">Hukuman saat itu</p>
                             <p className="font-medium text-scoutBrown-800">{p.hukuman || 'Tidak ada hukuman'}</p>
                           </div>
                           {p.keterangan && (
                             <div className="col-span-2 sm:col-span-3">
-                              <p className="text-scoutBrown-400">Keterangan</p>
+                              <p className="text-scoutBrown-600">Keterangan</p>
                               <p className="mt-1 rounded-lg border border-scoutBrown-100 bg-white p-2.5 text-scoutBrown-800">
                                 {p.keterangan}
                               </p>

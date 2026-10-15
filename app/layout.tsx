@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DIPORANI | Poin Siswa",
-  description: "Rekap poin pelanggaran dan pengumpulan hukuman Ambalan Diporani, SMAN 1 Kasihan.",
+  description: "Poin pelanggaran dan bukti hukuman siswa Ambalan Diporani, SMAN 1 Kasihan.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

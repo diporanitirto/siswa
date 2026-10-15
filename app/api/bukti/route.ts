@@ -41,12 +41,12 @@ export async function POST(request: Request) {
     }
     if (!row.perlu_bukti) {
       return NextResponse.json(
-        { error: 'Pelanggaran ini hanya peringatan — tidak perlu upload bukti.' },
+        { error: 'Pelanggaran ini hanya peringatan, tidak perlu unggah bukti.' },
         { status: 400 }
       );
     }
     if (row.bukti_status === 'selesai') {
-      return NextResponse.json({ error: 'Hukuman ini sudah selesai dan tidak bisa upload ulang.' }, { status: 400 });
+      return NextResponse.json({ error: 'Hukuman ini sudah selesai dan tidak bisa unggah ulang.' }, { status: 400 });
     }
 
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'jpg';
