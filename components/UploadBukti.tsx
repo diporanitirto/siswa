@@ -109,13 +109,13 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
   };
 
   return (
-    <div className="rounded-lg border border-scoutBrown-200 bg-white p-3">
-      <p className="text-xs font-semibold text-scoutBrown-700 mb-2">
-        Unggah Bukti Hukuman
+    <div className="rounded-lg border border-scoutBrown-200 bg-white p-4">
+      <p className="mb-3 text-sm font-semibold text-scoutBrown-800">
+        Unggah bukti hukuman
       </p>
 
       {success && !file && (
-        <div className="mb-2 rounded-lg border border-scoutGreen-300 bg-scoutGreen-50 p-2">
+        <div className="mb-2 rounded-lg border border-scoutGreen-300 bg-scoutGreen-50 p-2.5" role="status">
           <p className="text-xs text-scoutGreen-700">
             Bukti sudah diunggah. Tunggu verifikasi pembina/petugas.
           </p>
@@ -135,7 +135,7 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
               type="button"
               onClick={handleUpload}
               disabled={isUploading}
-              className="flex-1 rounded-lg bg-scoutGreen-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-scoutGreen-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-11 flex-1 rounded-lg bg-scoutGreen-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-scoutGreen-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isUploading ? 'Mengunggah...' : 'Unggah Bukti'}
             </button>
@@ -143,7 +143,7 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
               type="button"
               onClick={resetPreview}
               disabled={isUploading}
-              className="rounded-lg border border-scoutBrown-200 bg-scoutBrown-50 px-3 py-2 text-xs font-medium text-scoutBrown-600 transition-colors hover:bg-scoutBrown-100 disabled:opacity-60"
+              className="min-h-11 rounded-lg border border-scoutBrown-200 bg-scoutBrown-50 px-4 py-2.5 text-sm font-medium text-scoutBrown-600 transition-colors hover:bg-scoutBrown-100 disabled:opacity-60"
             >
               Batal
             </button>
@@ -162,9 +162,9 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
           />
           <label
             htmlFor={`bukti-file-${pelanggaranId}`}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-scoutBrown-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-scoutBrown-800"
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-scoutBrown-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-scoutBrown-800 focus-within:ring-2 focus-within:ring-scoutBrown-500 focus-within:ring-offset-2"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -175,21 +175,21 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
             </svg>
             Pilih Foto dari Galeri / Kamera
           </label>
-          <p className="mt-1.5 text-[0.65rem] text-scoutBrown-600">
+          <p className="mt-2 text-xs text-scoutBrown-600">
             Foto dikompres otomatis. Ukuran akhir maks. 8 MB.
           </p>
         </>
       )}
 
       {isUploading && (
-        <div className="mt-2 flex items-center gap-2 text-xs text-scoutBrown-500">
+        <div className="mt-2 flex items-center gap-2 text-xs text-scoutBrown-600" role="status">
           <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-scoutBrown-200 border-t-scoutBrown-600" />
           Mengunggah ke Google Drive...
         </div>
       )}
 
       {error && (
-        <div className="mt-2 rounded-lg border border-scoutRed-200 bg-scoutRed-50 p-2">
+        <div className="mt-2 rounded-lg border border-scoutRed-200 bg-scoutRed-50 p-2.5" role="alert">
           <p className="text-xs text-scoutRed-700">{error}</p>
         </div>
       )}

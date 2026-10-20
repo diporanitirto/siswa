@@ -1,8 +1,9 @@
-# Dashboard Siswa — Poin & Hukuman (DIPORANI)
+# Dashboard Siswa: Poin & Hukuman (DIPORANI)
 
 App khusus siswa untuk:
 - Masuk pakai NIS (tanpa akun/password)
 - Melihat rekap poin pelanggaran dan hukuman yang berlaku
+- Halaman tugas per pelanggaran: rincian hukuman, status, dan form upload bukti di `/tugas/[id]`
 - Upload foto bukti hukuman → otomatis masuk Google Drive, database hanya menyimpan linknya
 - Lihat status verifikasi bukti (menunggu / selesai / ditolak + alasan)
 
@@ -11,9 +12,9 @@ Skema database ada di `sql/06-pelanggaran.sql` dan `sql/07-pelanggaran-perlu-buk
 (jalankan berurutan di Supabase SQL Editor).
 
 Catatan: pelanggaran dengan hukuman **tahap peringatan** (tahap pertama, min_poin
-terkecil) tidak perlu upload bukti — upload bukti hanya untuk tahap kedua dst.
+terkecil) tidak perlu upload bukti; upload bukti hanya untuk tahap kedua dst.
 Kalau pengaturan tahap diubah (dari dashboard admin), catatan yang **belum diproses**
-langsung menyesuaikan tahap terbaru — misalnya hukuman tahap baru ditambahkan setelah
+langsung menyesuaikan tahap terbaru, misalnya hukuman tahap baru ditambahkan setelah
 catatan lama tercatat, siswanya otomatis bisa upload bukti untuk hukuman itu.
 
 ## Menjalankan lokal
@@ -58,7 +59,8 @@ dan dibagikan *anyone with link* supaya admin bisa melihatnya dari dashboard.
    otomatis (default 1 poin per pelanggaran, bisa diubah per jenis).
 2. Hukuman mengikuti **tahap** (misal pelanggaran pertama = "Peringatan", berikutnya
    bisa diatur di tab *Pengaturan* dashboard admin).
-3. Siswa buka app ini → masuk dengan NIS → lihat poin & hukuman → upload foto bukti.
+3. Siswa buka app ini → masuk dengan NIS → lihat poin & hukuman → klik **Buka halaman tugas**
+   untuk melihat rincian dan mengirim bukti.
 4. Petugas memverifikasi di tab *Daftar & Verifikasi*: **Setujui** (selesai) atau
    **Tolak** + alasan (siswa bisa upload ulang).
 

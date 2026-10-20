@@ -1,44 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import UploadBukti from './UploadBukti';
-import type {
-  BuktiStatus,
-  PelanggaranData,
-  PelanggaranResponse,
-  SiswaData,
-  TahapHukuman,
-} from '@/lib/types';
+import Link from 'next/link';
+import { formatDate, formatTime, infoBukti, statusInfo } from '@/lib/bukti';
+import type { PelanggaranData, PelanggaranResponse, SiswaData, TahapHukuman } from '@/lib/types';
 
 interface DashboardSiswaProps {
   nis: string;
   siswa: SiswaData;
   onLogout: () => void;
-}
-
-const statusInfo: Record<BuktiStatus, { label: string; className: string }> = {
-  belum: { label: 'Belum unggah', className: 'border-scoutKhaki-300 bg-scoutKhaki-100 text-scoutBrown-800' },
-  menunggu: { label: 'Menunggu verifikasi', className: 'border-scoutKhaki-500 bg-scoutKhaki-200 text-scoutBrown-800' },
-  selesai: { label: 'Selesai', className: 'border-scoutGreen-300 bg-scoutGreen-100 text-scoutGreen-700' },
-  ditolak: { label: 'Ditolak', className: 'border-scoutRed-300 bg-scoutRed-100 text-scoutRed-700' },
-};
-
-function infoBukti(p: PelanggaranData) {
-  if (!p.perlu_bukti) {
-    return {
-      label: 'Peringatan',
-      className: 'border-scoutBrown-200 bg-scoutBrown-50 text-scoutBrown-600',
-    };
-  }
-  return statusInfo[p.bukti_status];
-}
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function formatTime(d: string) {
-  return new Date(d).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
 export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaProps) {
@@ -92,25 +62,9 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
     ? Math.min(100, Math.round((totalPoin / tahapBerikut.min_poin) * 100))
     : 100;
 
-  const handleUploaded = (updated: PelanggaranData) => {
-    setRows((prev) =>
-      prev.map((r) =>
-        r.id === updated.id
-          ? {
-              ...r,
-              bukti_status: updated.bukti_status,
-              bukti_url: updated.bukti_url,
-              bukti_note: updated.bukti_note,
-              bukti_uploaded_at: updated.bukti_uploaded_at,
-            }
-          : r
-      )
-    );
-  };
-
   // Hukuman yang belum tuntas (perlu upload / menunggu verifikasi / ditolak).
   const hukumanBelumSelesai = rows.filter(
-    (r) => r.perlu_bukti && r.hukuman && r.bukti_status !== 'selesai'
+    (r) => r.perlu_bukti && r.bukti_status !== 'selesai'
   );
   // Masih ada hukuman yang harus dijalani/upload buktinya? Kartu jadi merah.
   const adaHukuman = hukumanBelumSelesai.length > 0;
@@ -176,50 +130,59 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
         </div>
 
         {adaHukuman && (
-          <div className="border-t border-scoutRed-200 bg-scoutRed-50 px-5 py-4">
+          <div id="tugas" className="border-t border-scoutRed-200 bg-scoutRed-50 px-5 py-4">
             <p className="text-xs font-semibold text-scoutRed-700">
               Ada <span className="font-bold">{hukumanBelumSelesai.length}</span> hukuman yang belum
-              selesai. Unggah foto buktinya di sini:
+              selesai. Buka halaman tugas untuk melihat rincian dan mengirim bukti.
             </p>
 
             <div className="mt-3 space-y-3">
-              {hukumanBelumSelesai.map((p) => (
-                <div key={p.id} className="rounded-lg border border-scoutRed-200 bg-white p-3">
-                  <p className="text-sm font-semibold leading-snug text-scoutBrown-900">{p.hukuman}</p>
-                  <p className="mt-0.5 text-xs text-scoutBrown-600">
-                    {p.jenis_nama || 'Pelanggaran'} • {formatDate(p.tanggal)}
-                  </p>
+              {hukumanBelumSelesai.map((p) => {
+                const status = statusInfo[p.bukti_status];
+                const sudahKirim = p.bukti_status === 'menunggu';
 
-                  {p.bukti_status === 'menunggu' ? (
-                    <div className="mt-2.5 rounded-lg border border-scoutKhaki-300 bg-scoutKhaki-100 p-2.5">
-                      <p className="text-xs text-scoutBrown-700">
-                        Bukti sudah diunggah, tunggu verifikasi pembina/petugas.
-                      </p>
-                      {p.bukti_url && (
-                        <a
-                          href={p.bukti_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-1.5 inline-block text-xs font-medium text-scoutBrown-600 underline underline-offset-2 hover:text-scoutBrown-800"
-                        >
-                          Lihat bukti yang diunggah
-                        </a>
-                      )}
+                return (
+                  <div key={p.id} className="rounded-lg border border-scoutRed-200 bg-white p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold leading-snug text-scoutBrown-900">
+                          {p.hukuman || 'Tugas hukuman'}
+                        </p>
+                        <p className="mt-0.5 text-xs text-scoutBrown-600">
+                          {p.jenis_nama || 'Pelanggaran'} • {formatDate(p.tanggal)}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-md border px-2 py-0.5 text-[0.65rem] font-semibold ${status.className}`}
+                      >
+                        {status.label}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="mt-2.5 space-y-2">
-                      {p.bukti_status === 'ditolak' && p.bukti_note && (
-                        <div className="rounded-lg border border-scoutRed-200 bg-scoutRed-50 p-2.5">
+
+                    {sudahKirim ? (
+                      <p className="mt-2.5 text-xs text-scoutBrown-600">
+                        Bukti sudah dikirim. Tunggu verifikasi pembina atau petugas.
+                      </p>
+                    ) : (
+                      p.bukti_status === 'ditolak' &&
+                      p.bukti_note && (
+                        <div className="mt-2.5 rounded-lg border border-scoutRed-200 bg-scoutRed-50 p-2.5">
                           <p className="text-xs text-scoutRed-700">
-                            <span className="font-semibold">Ditolak:</span> {p.bukti_note}
+                            <span className="font-semibold">Alasan ditolak:</span> {p.bukti_note}
                           </p>
                         </div>
-                      )}
-                      <UploadBukti pelanggaranId={p.id} nis={nis} onUploaded={handleUploaded} />
-                    </div>
-                  )}
-                </div>
-              ))}
+                      )
+                    )}
+
+                    <Link
+                      href={`/tugas/${p.id}`}
+                      className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-scoutBrown-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-scoutBrown-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-scoutBrown-500 focus-visible:ring-offset-2"
+                    >
+                      {sudahKirim ? 'Lihat status tugas' : 'Buka halaman tugas'}
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -296,6 +259,15 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                         ▼
                       </span>
                     </button>
+
+                    {p.perlu_bukti && (
+                      <Link
+                        href={`/tugas/${p.id}`}
+                        className="flex min-h-9 w-full items-center justify-center border-t border-scoutBrown-200 bg-scoutBrown-700 px-3 py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-scoutBrown-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-scoutBrown-500 focus-visible:ring-offset-2"
+                      >
+                        Buka halaman tugas
+                      </Link>
+                    )}
 
                     {expanded && (
                       <div className="space-y-3 border-t border-scoutBrown-100 bg-scoutKhaki-50 p-4">
