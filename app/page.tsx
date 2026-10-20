@@ -15,6 +15,27 @@ export default function Home() {
   const [siswaData, setSiswaData] = useState<SiswaData | null>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const nisParam = params.get('nis');
+
+    if (nisParam) {
+      fetch(`/api/siswa?nis=${encodeURIComponent(nisParam)}`)
+        .then((res) => res.json().catch(() => null))
+        .then((result) => {
+          if (result?.success) {
+            handleNISSubmit(nisParam, result.data as SiswaData);
+          } else {
+            setShowNISModal(true);
+          }
+        })
+        .catch(() => setShowNISModal(true))
+        .finally(() => {
+          setIsLoading(false);
+          window.history.replaceState({}, '', '/');
+        });
+      return;
+    }
+
     const storedNis = sessionStorage.getItem('nis');
     const storedSiswaData = sessionStorage.getItem('siswaData');
 
