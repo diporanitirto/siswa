@@ -22,12 +22,20 @@
  *    {"ok":true,...} tanda script aktif.
  *
  * CATATAN:
- * - Semua foto masuk ke folder "Bukti Hukuman" di Google Drive
- *   akun ini (folder dibuat otomatis saat upload pertama).
- * - File dibagikan "anyone with link" agar bisa dilihat admin
- *   dari dashboard. Jangan pakai akun Drive yang isinya privat.
+ * - Foto masuk ke folder "Bukti Hukuman" di Google Drive akun
+ *   ini (folder dibuat otomatis saat upload pertama).
+ * - Kalau satu pengiriman berisi beberapa foto, app mengirim
+ *   folderName. Script membuat satu subfolder per pengiriman,
+ *   jadi admin cukup membuka satu link folder untuk verifikasi.
+ * - File dan subfolder dibagikan "anyone with link" agar bisa
+ *   dilihat admin dari dashboard. Jangan pakai akun Drive yang
+ *   isinya privat.
  * - Kuota Drive akun ini dipakai bersama: 15 GB untuk semua
  *   foto bukti. Foto dari HP sudah dikompres otomatis (~1-2 MB).
+ *
+ * SETELAH MENGUBAH SCRIPT:
+ * Deploy > Manage deployments > ikon edit > Version: New version
+ * > Deploy. URL web app tetap sama.
  ************************************************************/
 
 // GANTI dengan string rahasia pilihan Anda (sama dengan DRIVE_UPLOAD_SECRET di .env.local)
@@ -35,6 +43,7 @@ var SECRET = 'GANTI_DENGAN_STRING_RAHASIA_PANJANG';
 
 var FOLDER_NAME = 'Bukti Hukuman';
 var MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+var MAX_FOLDER_NAME = 120;
 
 function doGet() {
   return jsonOut({
@@ -68,19 +77,33 @@ function doPost(e) {
       return jsonOut({ ok: false, error: 'File terlalu besar (maks 8 MB).' });
     }
 
-    var folder = getOrCreateFolder(FOLDER_NAME);
+    var root = getOrCreateFolder(FOLDER_NAME);
+    var folderName = body.folderName ? sanitizeFolderName(body.folderName) : '';
+    var folder = folderName ? getOrCreateSubfolder(root, folderName) : root;
+
+    if (folderName) {
+      folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    }
+
     var bytes = Utilities.base64Decode(body.data);
     var blob = Utilities.newBlob(bytes, body.mimeType, body.filename);
     var file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
     var fileId = file.getId();
-    return jsonOut({
+    var result = {
       ok: true,
       fileId: fileId,
       url: 'https://drive.google.com/file/d/' + fileId + '/view',
       name: file.getName(),
-    });
+    };
+
+    if (folderName) {
+      result.folderId = folder.getId();
+      result.folderUrl = 'https://drive.google.com/drive/folders/' + folder.getId();
+    }
+
+    return jsonOut(result);
   } catch (err) {
     return jsonOut({ ok: false, error: 'Error: ' + String(err) });
   }
@@ -89,6 +112,19 @@ function doPost(e) {
 function getOrCreateFolder(name) {
   var it = DriveApp.getFoldersByName(name);
   return it.hasNext() ? it.next() : DriveApp.createFolder(name);
+}
+
+function getOrCreateSubfolder(parent, name) {
+  var it = parent.getFoldersByName(name);
+  return it.hasNext() ? it.next() : parent.createFolder(name);
+}
+
+function sanitizeFolderName(name) {
+  return String(name)
+    .replace(/[\\/:*?"<>|]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_FOLDER_NAME);
 }
 
 function jsonOut(obj) {

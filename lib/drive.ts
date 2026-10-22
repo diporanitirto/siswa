@@ -5,11 +5,14 @@ interface DriveUploadInput {
   filename: string;
   mimeType: string;
   dataBase64: string;
+  /** Kalau diisi, Apps Script membuat/memakai subfolder ini di dalam folder bukti. */
+  folderName?: string;
 }
 
-interface DriveUploadResult {
+export interface DriveUploadResult {
   fileId: string;
   url: string;
+  folder?: { id: string; url: string };
 }
 
 /**
@@ -44,12 +47,25 @@ export async function uploadToDrive(input: DriveUploadInput): Promise<DriveUploa
   }
 
   const json = (await res.json().catch(() => null)) as
-    | { ok?: boolean; fileId?: string; url?: string; error?: string }
+    | {
+        ok?: boolean;
+        fileId?: string;
+        url?: string;
+        folderId?: string;
+        folderUrl?: string;
+        error?: string;
+      }
     | null;
 
   if (!res.ok || !json?.ok || !json.fileId || !json.url) {
     throw new Error(json?.error || 'Gagal mengunggah bukti ke Google Drive.');
   }
 
-  return { fileId: json.fileId, url: json.url };
+  return {
+    fileId: json.fileId,
+    url: json.url,
+    ...(json.folderId && json.folderUrl
+      ? { folder: { id: json.folderId, url: json.folderUrl } }
+      : {}),
+  };
 }

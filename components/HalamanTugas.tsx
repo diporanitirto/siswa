@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import UploadBukti from './UploadBukti';
-import { formatDate, formatDateTime, infoBukti } from '@/lib/bukti';
-import type { PelanggaranData, PelanggaranResponse, SiswaData } from '@/lib/types';
+import { daftarBukti, formatDate, formatDateTime, infoBukti } from '@/lib/bukti';
+import type { BuktiFile, PelanggaranData, PelanggaranResponse, SiswaData } from '@/lib/types';
 
 function KartuSesiHilang() {
   return (
@@ -82,6 +82,64 @@ function KartuMemuat() {
   );
 }
 
+function DaftarTautanBukti({
+  files,
+  variant = 'button',
+  label = 'Lihat bukti yang dikirim',
+}: {
+  files: BuktiFile[];
+  variant?: 'button' | 'inline';
+  label?: string;
+}) {
+  if (files.length === 0) return null;
+
+  if (variant === 'inline') {
+    return (
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+        {files.map((file, index) => (
+          <a
+            key={`${file.file_id}-${index}`}
+            href={file.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-scoutRed-700 underline underline-offset-2 hover:text-scoutRed-800"
+          >
+            {file.kind === 'video'
+              ? 'Video'
+              : file.kind === 'folder'
+                ? `Folder foto${file.count ? ` (${file.count})` : ''}`
+                : files.length > 1
+                  ? `Foto ${index + 1}`
+                  : label}
+          </a>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 space-y-2">
+      {files.map((file, index) => (
+        <a
+          key={`${file.file_id}-${index}`}
+          href={file.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-scoutBrown-200 bg-white px-4 py-2.5 text-sm font-semibold text-scoutBrown-700 transition-colors hover:bg-scoutKhaki-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-scoutBrown-500 focus-visible:ring-offset-2 sm:w-auto"
+        >
+          {file.kind === 'video'
+            ? 'Tonton video'
+            : file.kind === 'folder'
+              ? `Buka folder foto${file.count ? ` (${file.count})` : ''} di Google Drive`
+              : files.length > 1
+                ? `Lihat foto ${index + 1}`
+                : label}
+        </a>
+      ))}
+    </div>
+  );
+}
+
 export default function HalamanTugas() {
   const params = useParams<{ id: string }>();
   const id = typeof params?.id === 'string' ? params.id : '';
@@ -151,7 +209,9 @@ export default function HalamanTugas() {
           ? {
               ...row,
               bukti_status: updated.bukti_status,
+              bukti_file_id: updated.bukti_file_id,
               bukti_url: updated.bukti_url,
+              bukti_files: updated.bukti_files,
               bukti_note: updated.bukti_note,
               bukti_uploaded_at: updated.bukti_uploaded_at,
             }
@@ -169,6 +229,7 @@ export default function HalamanTugas() {
   if (!tugas) return <KartuTugasHilang />;
 
   const status = infoBukti(tugas);
+  const bukti = daftarBukti(tugas);
   const perluKirim = tugas.perlu_bukti && tugas.bukti_status !== 'menunggu' && tugas.bukti_status !== 'selesai';
 
   return (
@@ -278,16 +339,7 @@ export default function HalamanTugas() {
               </p>
             </div>
           </div>
-          {tugas.bukti_url && (
-            <a
-              href={tugas.bukti_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-scoutBrown-200 bg-white px-4 py-2.5 text-sm font-semibold text-scoutBrown-700 transition-colors hover:bg-scoutKhaki-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-scoutBrown-500 focus-visible:ring-offset-2 sm:w-auto"
-            >
-              Lihat bukti yang dikirim
-            </a>
-          )}
+          {bukti.length > 0 && <DaftarTautanBukti files={bukti} />}
         </section>
       )}
 
@@ -308,16 +360,7 @@ export default function HalamanTugas() {
               </p>
             </div>
           </div>
-          {tugas.bukti_url && (
-            <a
-              href={tugas.bukti_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-scoutBrown-200 bg-white px-4 py-2.5 text-sm font-semibold text-scoutBrown-700 transition-colors hover:bg-scoutKhaki-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-scoutBrown-500 focus-visible:ring-offset-2 sm:w-auto"
-            >
-              Lihat bukti yang dikirim
-            </a>
-          )}
+          {bukti.length > 0 && <DaftarTautanBukti files={bukti} />}
         </section>
       )}
 
@@ -326,7 +369,8 @@ export default function HalamanTugas() {
           <div className="border-b border-scoutBrown-200 bg-scoutKhaki-50 px-5 py-4">
             <h2 className="text-base font-bold text-scoutBrown-900">Kirim bukti tugas</h2>
             <p className="mt-1 text-sm text-scoutBrown-600">
-              Unggah satu foto sebagai bukti bahwa kamu sudah menjalankan tugas ini.
+              Unggah beberapa foto atau tempel link video Google Drive sebagai bukti bahwa kamu
+              sudah menjalankan tugas ini.
             </p>
           </div>
 
@@ -337,15 +381,12 @@ export default function HalamanTugas() {
                 <p className="mt-1 text-sm text-scoutRed-700">
                   {tugas.bukti_note || 'Silakan unggah ulang bukti tugasmu.'}
                 </p>
-                {tugas.bukti_url && (
-                  <a
-                    href={tugas.bukti_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-block text-xs font-semibold text-scoutRed-700 underline underline-offset-2 hover:text-scoutRed-800"
-                  >
-                    Lihat bukti sebelumnya
-                  </a>
+                {bukti.length > 0 && (
+                  <DaftarTautanBukti
+                    files={bukti}
+                    variant="inline"
+                    label="Lihat bukti sebelumnya"
+                  />
                 )}
               </div>
             )}

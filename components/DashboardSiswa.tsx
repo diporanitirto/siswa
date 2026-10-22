@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { formatDate, formatTime, infoBukti, statusInfo } from '@/lib/bukti';
+import { daftarBukti, formatDate, formatTime, infoBukti, statusInfo } from '@/lib/bukti';
 import type { PelanggaranData, PelanggaranResponse, SiswaData, TahapHukuman } from '@/lib/types';
 
 interface DashboardSiswaProps {
@@ -140,6 +140,7 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
               {hukumanBelumSelesai.map((p) => {
                 const status = statusInfo[p.bukti_status];
                 const sudahKirim = p.bukti_status === 'menunggu';
+                const bukti = daftarBukti(p);
 
                 return (
                   <div key={p.id} className="rounded-lg border border-scoutRed-200 bg-white p-3">
@@ -233,6 +234,7 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
               {rows.map((p) => {
                 const expanded = expandedId === p.id;
                 const status = infoBukti(p);
+                const bukti = daftarBukti(p);
                 return (
                   <div key={p.id} className="overflow-hidden rounded-lg border border-scoutBrown-200">
                     <button
@@ -308,15 +310,26 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                           </div>
                         )}
 
-                        {p.bukti_url && (
-                          <a
-                            href={p.bukti_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-full rounded-lg border border-scoutBrown-200 bg-white px-3 py-2 text-center text-xs font-medium text-scoutBrown-700 transition-colors hover:bg-scoutKhaki-50"
-                          >
-                            Lihat Bukti di Google Drive
-                          </a>
+                        {bukti.length > 0 && (
+                          <div className="space-y-1.5">
+                            {bukti.map((file, index) => (
+                              <a
+                                key={`${file.file_id}-${index}`}
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block w-full rounded-lg border border-scoutBrown-200 bg-white px-3 py-2 text-center text-xs font-medium text-scoutBrown-700 transition-colors hover:bg-scoutKhaki-50"
+                              >
+                                {file.kind === 'video'
+                                  ? 'Tonton Video di Google Drive'
+                                  : file.kind === 'folder'
+                                    ? `Buka Folder Foto${file.count ? ` (${file.count})` : ''} di Google Drive`
+                                    : bukti.length > 1
+                                      ? `Lihat Foto ${index + 1} di Google Drive`
+                                      : 'Lihat Bukti di Google Drive'}
+                              </a>
+                            ))}
+                          </div>
                         )}
                       </div>
                     )}

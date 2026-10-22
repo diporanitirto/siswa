@@ -14,6 +14,15 @@ export interface TahapHukuman {
 
 export type BuktiStatus = 'belum' | 'menunggu' | 'selesai' | 'ditolak';
 
+export interface BuktiFile {
+  file_id: string;
+  url: string;
+  /** Foto hasil upload, link video, atau folder Drive berisi beberapa foto. Data lama tidak punya field ini. */
+  kind?: 'image' | 'video' | 'folder';
+  /** Jumlah foto di dalam folder (khusus kind folder). */
+  count?: number;
+}
+
 export interface PelanggaranData {
   id: string;
   jenis_nama: string | null;
@@ -25,7 +34,9 @@ export interface PelanggaranData {
   tanggal: string;
   created_at: string;
   bukti_status: BuktiStatus;
+  bukti_file_id: string | null;
   bukti_url: string | null;
+  bukti_files: BuktiFile[] | null;
   bukti_note: string | null;
   bukti_uploaded_at: string | null;
   verified_at: string | null;
