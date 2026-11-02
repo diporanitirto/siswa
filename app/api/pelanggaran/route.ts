@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
 const BASE_SELECT =
-  'id, jenis_nama, poin, total_poin, hukuman, perlu_bukti, keterangan, tanggal, created_at, bukti_status, bukti_file_id, bukti_url, bukti_note, bukti_uploaded_at, verified_at, deadline, deadline_hari, asal_pelanggaran_id';
+  'id, jenis_nama, poin, total_poin, hukuman, perlu_bukti, keterangan, tanggal, created_at, bukti_status, bukti_file_id, bukti_url, bukti_note, bukti_uploaded_at, verified_at, deadline, deadline_hari, asal_pelanggaran_id, generasi';
 const SELECT_WITH_FILES =
-  'id, jenis_nama, poin, total_poin, hukuman, perlu_bukti, keterangan, tanggal, created_at, bukti_status, bukti_file_id, bukti_files, bukti_url, bukti_note, bukti_uploaded_at, verified_at, deadline, deadline_hari, asal_pelanggaran_id';
+  'id, jenis_nama, poin, total_poin, hukuman, perlu_bukti, keterangan, tanggal, created_at, bukti_status, bukti_file_id, bukti_files, bukti_url, bukti_note, bukti_uploaded_at, verified_at, deadline, deadline_hari, asal_pelanggaran_id, generasi';
 
 export async function GET(request: Request) {
   try {

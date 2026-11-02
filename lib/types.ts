@@ -43,6 +43,7 @@ export interface PelanggaranData {
   deadline: string | null;
   deadline_hari: number | null;
   asal_pelanggaran_id: string | null;
+  generasi: number | null;
 }
 
 export interface PelanggaranResponse {
