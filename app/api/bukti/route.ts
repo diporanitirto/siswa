@@ -4,6 +4,7 @@ import { uploadToDrive, type DriveUploadResult } from '@/lib/drive';
 import { MAX_BUKTI_PHOTOS, susunBuktiFiles } from '@/lib/bukti';
 import { parseDriveFileLink } from '@/lib/drive-link';
 import type { BuktiFile } from '@/lib/types';
+import { notifyAdmins } from '@/lib/push-server';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -158,6 +159,13 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    // Notif admin (fire-and-forget)
+    void notifyAdmins(
+      'Bukti tugas baru',
+      `${row.nama} (${row.nis}) mengirim bukti: ${row.jenis_nama ?? 'tugas'}`,
+      '/pelanggaran/daftar'
+    );
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
