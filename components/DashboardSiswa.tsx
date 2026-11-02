@@ -152,6 +152,12 @@ export default function DashboardSiswa({ nis, siswa, onLogout }: DashboardSiswaP
                         <p className="mt-0.5 text-xs text-scoutBrown-600">
                           {p.jenis_nama || 'Pelanggaran'} • {formatDate(p.tanggal)}
                         </p>
+                        {p.deadline && (
+                          <p className="mt-0.5 text-xs font-medium text-scoutRed-700">
+                            Deadline: {formatDate(p.deadline)}
+                            {p.asal_pelanggaran_id ? ' (tugas sangga)' : ''}
+                          </p>
+                        )}
                       </div>
                       <span
                         className={`shrink-0 rounded-md border px-2 py-0.5 text-[0.65rem] font-semibold ${status.className}`}

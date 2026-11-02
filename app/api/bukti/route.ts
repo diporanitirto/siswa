@@ -38,7 +38,9 @@ export async function POST(request: Request) {
     }
     if (files.length > MAX_BUKTI_PHOTOS) {
       return NextResponse.json(
-        { error: `Maksimal ${MAX_BUKTI_PHOTOS} foto per tugas.` },
+        {
+          error: `Maksimal ${MAX_BUKTI_PHOTOS} foto per pengiriman. Lebih dari itu, upload sisanya ke folder Google Drive sendiri lalu tempel link folder-nya di kolom link video.`,
+        },
         { status: 400 }
       );
     }
@@ -121,7 +123,9 @@ export async function POST(request: Request) {
       }
     }
 
-    const videoEntry: BuktiFile | null = videoLink ? { ...videoLink, kind: 'video' } : null;
+    const videoEntry: BuktiFile | null = videoLink
+      ? { ...videoLink, kind: videoLink.kind === 'folder' ? 'folder' : 'video' }
+      : null;
     const { files: buktiFiles, legacy } = susunBuktiFiles(uploadedFiles, videoEntry);
 
     if (!legacy) {

@@ -40,6 +40,9 @@ export interface PelanggaranData {
   bukti_note: string | null;
   bukti_uploaded_at: string | null;
   verified_at: string | null;
+  deadline: string | null;
+  deadline_hari: number | null;
+  asal_pelanggaran_id: string | null;
 }
 
 export interface PelanggaranResponse {

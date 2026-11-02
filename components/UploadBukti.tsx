@@ -52,6 +52,7 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     previewUrlsRef.current = picked.map((item) => item.previewUrl);
@@ -88,7 +89,9 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
     if (selected.length === 0) return;
 
     if (picked.length + selected.length > MAX_BUKTI_PHOTOS) {
-      setError(`Maksimal ${MAX_BUKTI_PHOTOS} foto per pengiriman.`);
+      setError(
+        `Maksimal ${MAX_BUKTI_PHOTOS} foto per pengiriman. Jika foto lebih dari ${MAX_BUKTI_PHOTOS}, upload sisanya di folder Google Drive sendiri, lalu lampirkan link-nya di bagian bawah ini. Tidak perlu upload foto-foto tersebut di sini.`
+      );
       return;
     }
 
@@ -110,7 +113,8 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
     setPicked((prev) => [...prev, ...added]);
   };
 
-  const handleUpload = async () => {
+  const performUpload = async () => {
+    setConfirmOpen(false);
     const rawVideoUrl = videoUrl.trim();
     if ((picked.length === 0 && !rawVideoUrl) || isUploading) return;
 
@@ -161,11 +165,12 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
       const hasFolder = Array.isArray(result.data?.bukti_files)
         ? result.data.bukti_files.some((file: { kind?: string }) => file?.kind === 'folder')
         : false;
+      const isFolderLink = videoLink?.kind === 'folder';
       setSuccessMessage(
         photoCount > 0 && videoLink
-          ? `${fotoLabel} dan link video sudah dikirim.`
+          ? `${fotoLabel} dan link ${isFolderLink ? 'folder' : 'video'} sudah dikirim.`
           : videoLink
-            ? 'Link video sudah dikirim.'
+            ? `Link ${isFolderLink ? 'folder' : 'video'} sudah dikirim.`
             : photoCount > 1 && hasFolder
               ? `${fotoLabel} disimpan ke satu folder Google Drive.`
               : `${fotoLabel} sudah diunggah.`
@@ -242,11 +247,59 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
       )}
 
       {hasContent && (
+        <div className="mb-3 rounded-lg border border-scoutBrown-200 bg-scoutKhaki-50 p-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-scoutBrown-700">
+            Validasi pengiriman
+          </p>
+          <ul className="space-y-1 text-xs text-scoutBrown-700">
+            <li className="flex items-center gap-2">
+              <span className={picked.length > 0 && picked.length <= MAX_BUKTI_PHOTOS ? 'text-scoutGreen-700' : 'text-scoutRed-700'}>
+                {picked.length > 0 && picked.length <= MAX_BUKTI_PHOTOS ? '✓' : '✗'}
+              </span>
+              Foto: {picked.length} / {MAX_BUKTI_PHOTOS}
+              {picked.length === 0 ? ' (tidak wajib jika ada link)' : ''}
+            </li>
+            <li className="flex items-center gap-2">
+              {videoUrl.trim() === '' ? (
+                <>
+                  <span className="text-scoutBrown-500">•</span>
+                  Link video/folder: tidak ada (opsional)
+                </>
+              ) : parseDriveFileLink(videoUrl) ? (
+                <>
+                  <span className="text-scoutGreen-700">✓</span>
+                  Link {parseDriveFileLink(videoUrl)?.kind === 'folder' ? 'folder' : 'video'} terdeteksi
+                </>
+              ) : (
+                <>
+                  <span className="text-scoutRed-700">✗</span>
+                  Link tidak valid (harus link Google Drive)
+                </>
+              )}
+            </li>
+            <li className="flex items-center gap-2">
+              {picked.length === 0 && !parseDriveFileLink(videoUrl) ? (
+                <>
+                  <span className="text-scoutRed-700">✗</span>
+                  Minimal 1 foto atau 1 link valid
+                </>
+              ) : (
+                <>
+                  <span className="text-scoutGreen-700">✓</span>
+                  Siap dikirim
+                </>
+              )}
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {hasContent && (
         <div className="mb-3 flex gap-2">
           <button
             type="button"
-            onClick={handleUpload}
-            disabled={isUploading}
+            onClick={() => setConfirmOpen(true)}
+            disabled={isUploading || (picked.length === 0 && !parseDriveFileLink(videoUrl))}
             className="min-h-11 flex-1 rounded-lg bg-scoutGreen-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-scoutGreen-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isUploading ? 'Mengirim...' : submitLabel}
@@ -295,16 +348,22 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
       <p className="mt-2 text-xs text-scoutBrown-600">
         Maksimal {MAX_BUKTI_PHOTOS} foto. Foto dikompres otomatis, ukuran akhir maks. 8 MB per foto.
       </p>
+      <p className="mt-1 text-xs text-scoutBrown-600">
+        Jika foto lebih dari {MAX_BUKTI_PHOTOS}, upload sisanya di folder Google Drive sendiri, lalu lampirkan
+        link-nya di bagian bawah ini (kolom "Link video / folder Google Drive"). Tidak perlu upload foto-foto
+        tersebut di sini.
+      </p>
 
       <div className="mt-4 rounded-lg border border-scoutBrown-200 bg-scoutKhaki-50 p-3">
         <label
           htmlFor={`bukti-video-${pelanggaranId}`}
           className="block text-sm font-semibold text-scoutBrown-800"
         >
-          Link video Google Drive (opsional)
+          Link video / folder Google Drive (opsional)
         </label>
         <p id={`bukti-video-help-${pelanggaranId}`} className="mt-0.5 text-xs text-scoutBrown-600">
-          Upload video ke Drive dulu, lalu tempel link filenya di sini.
+          Upload video atau folder foto ke Drive dulu, lalu tempel link file/folder-nya di sini. Link folder
+          dipakai kalau foto lebih dari {MAX_BUKTI_PHOTOS}.
         </p>
         <input
           id={`bukti-video-${pelanggaranId}`}
@@ -325,9 +384,11 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
           Atur akses file: Bagikan → Siapa saja yang memiliki link. Maksimal {MAX_BUKTI_VIDEOS}{' '}
           link video.
         </p>
-        {parseDriveFileLink(videoUrl) && (
+        {parseDriveFileLink(videoUrl)?.kind === 'folder' ? (
+          <p className="mt-1.5 text-xs font-medium text-scoutGreen-700">Link folder terdeteksi.</p>
+        ) : parseDriveFileLink(videoUrl) ? (
           <p className="mt-1.5 text-xs font-medium text-scoutGreen-700">Link video terdeteksi.</p>
-        )}
+        ) : null}
       </div>
 
       {progress && (
@@ -340,6 +401,71 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
       {error && (
         <div className="mt-2 rounded-lg border border-scoutRed-200 bg-scoutRed-50 p-2.5" role="alert">
           <p className="text-xs text-scoutRed-700">{error}</p>
+        </div>
+      )}
+
+      {confirmOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-scoutBrown-900/60 p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-scoutBrown-200 bg-white p-5 shadow-xl">
+            <h3 className="text-base font-bold text-scoutBrown-900">Konfirmasi pengiriman bukti</h3>
+            <p className="mt-1 text-xs text-scoutBrown-600">
+              Periksa kembali data yang akan dikirim. Setelah dikirim, tunggu verifikasi pembina/petugas.
+            </p>
+
+            <div className="mt-3 rounded-lg border border-scoutBrown-200 bg-scoutKhaki-50 p-3">
+              <ul className="space-y-1.5 text-sm text-scoutBrown-800">
+                <li className="flex justify-between gap-3">
+                  <span className="text-scoutBrown-600">Foto</span>
+                  <span className="font-semibold">{picked.length} foto</span>
+                </li>
+                {picked.length > 0 && (
+                  <li className="text-xs text-scoutBrown-600">
+                    {picked.map((_, i) => `Foto ${i + 1}`).join(', ')}
+                  </li>
+                )}
+                <li className="flex justify-between gap-3">
+                  <span className="text-scoutBrown-600">Link</span>
+                  <span className="font-semibold">
+                    {videoUrl.trim()
+                      ? parseDriveFileLink(videoUrl)?.kind === 'folder'
+                        ? 'Folder Google Drive'
+                        : 'Video Google Drive'
+                      : 'Tidak ada'}
+                  </span>
+                </li>
+                {videoUrl.trim() && (
+                  <li className="break-all text-xs text-scoutBrown-600">{videoUrl.trim()}</li>
+                )}
+                <li className="flex justify-between gap-3 border-t border-scoutBrown-200 pt-2">
+                  <span className="text-scoutBrown-600">Total</span>
+                  <span className="font-semibold">
+                    {picked.length} foto{videoUrl.trim() ? ' + 1 link' : ''}
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="min-h-11 flex-1 rounded-lg border border-scoutBrown-200 bg-scoutBrown-50 px-4 py-2.5 text-sm font-medium text-scoutBrown-600 transition-colors hover:bg-scoutBrown-100"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={performUpload}
+                className="min-h-11 flex-1 rounded-lg bg-scoutGreen-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-scoutGreen-800"
+              >
+                Ya, kirim
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

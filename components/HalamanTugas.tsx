@@ -264,6 +264,12 @@ export default function HalamanTugas() {
           <p className="mt-2 text-sm text-white/85">
             {tugas.jenis_nama || 'Pelanggaran'} • {formatDate(tugas.tanggal)}
           </p>
+          {tugas.deadline && (
+            <p className="mt-1 text-sm font-semibold text-white/95">
+              Deadline: {formatDate(tugas.deadline)}
+              {tugas.asal_pelanggaran_id ? ' (tugas sangga)' : ''}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-x-8 gap-y-3 border-t border-scoutBrown-100 px-5 py-4">
