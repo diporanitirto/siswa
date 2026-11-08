@@ -97,9 +97,9 @@ export async function POST(request: Request) {
     // Beberapa foto dalam satu pengiriman masuk ke satu subfolder Drive.
     const folderName =
       files.length > 1 ? `Tugas-${nis}-${row.id.slice(0, 8)}-${stamp}` : undefined;
-    const uploadedFiles: DriveUploadResult[] = [];
 
-    for (const [index, file] of files.entries()) {
+    const uploadOne = async (index: number): Promise<DriveUploadResult> => {
+      const file = files[index];
       const ext =
         (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) ||
         'jpg';
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
       const buffer = Buffer.from(await file.arrayBuffer());
 
       try {
-        const uploaded = await uploadToDrive({
+        return await uploadToDrive({
           nis,
           nama: row.nama,
           jenis: row.jenis_nama ?? '',
@@ -116,13 +116,19 @@ export async function POST(request: Request) {
           dataBase64: buffer.toString('base64'),
           folderName,
         });
-        uploadedFiles.push(uploaded);
       } catch (uploadError) {
         const message =
           uploadError instanceof Error ? uploadError.message : 'Gagal mengunggah ke Google Drive.';
         throw new Error(`Foto ${index + 1} gagal diunggah: ${message}`);
       }
-    }
+    };
+
+    // Foto pertama diunggah dulu (sekaligus bikin subfolder Drive sekali),
+    // sisanya paralel supaya berkas lebih cepat tersimpan.
+    const uploadedFiles: DriveUploadResult[] =
+      folderName && files.length > 1
+        ? [await uploadOne(0), ...(await Promise.all(files.slice(1).map((_, i) => uploadOne(i + 1))))]
+        : await Promise.all(files.map((_, i) => uploadOne(i)));
 
     const videoEntry: BuktiFile | null = videoLink
       ? { ...videoLink, kind: videoLink.kind === 'folder' ? 'folder' : 'video' }

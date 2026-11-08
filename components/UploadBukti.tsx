@@ -130,16 +130,19 @@ export default function UploadBukti({ pelanggaranId, nis, onUploaded }: UploadBu
     setIsUploading(true);
 
     try {
-      const prepared: File[] = [];
-      for (const [index, item] of picked.entries()) {
-        setProgress(`Menyiapkan foto ${index + 1} dari ${picked.length}...`);
-        // Kalau browser tidak bisa kompres (mis. HEIC), kirim apa adanya.
-        try {
-          prepared.push(await compressImage(item.file));
-        } catch {
-          prepared.push(item.file);
-        }
-      }
+      setProgress(
+        `Menyiapkan ${picked.length} foto...`
+      );
+      const prepared = await Promise.all(
+        picked.map(async (item) => {
+          // Kalau browser tidak bisa kompres (mis. HEIC), kirim apa adanya.
+          try {
+            return await compressImage(item.file);
+          } catch {
+            return item.file;
+          }
+        })
+      );
 
       const photoCount = prepared.length;
       setProgress(
